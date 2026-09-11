@@ -1,0 +1,392 @@
+{
+  "info": {
+    "name": "MISE — Booking API Tests (Complete)",
+    "description": "Расширенная тест-коллекция API для бронирования столика. Включает базовые и граничные проверки с автоматическими assertions.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://qa-booking-demo.vercel.app"
+    }
+  ],
+  "item": [
+    {
+      "name": "01. Успешное бронирование (Позитивный)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Статус-код 200 или 201', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([200, 201]);",
+              "});",
+              "",
+              "pm.test('Ответ содержит JSON с подтверждением брони', function () {",
+              "    pm.response.to.be.json;",
+              "    const res = pm.response.json();",
+              "    pm.expect(res).to.be.an('object');",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Анна\",\n  \"phone\": \"+79991234567\",\n  \"date\": \"2026-09-20\",\n  \"time\": \"14:00\",\n  \"guests\": 4\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      }
+    },
+    {
+      "name": "02. Невалидный телефон (короткий номер)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Ожидается 400 Bad Request при некорректном телефоне', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('Сервер не упал с 500 Internal Server Error', function () {",
+              "    pm.expect(pm.response.code).to.not.equal(500);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Анна\",\n  \"phone\": \"12345\",\n  \"date\": \"2026-09-20\",\n  \"time\": \"14:00\",\n  \"guests\": 4\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      }
+    },
+    {
+      "name": "03. Дата в прошлом",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Ожидается 400 Bad Request при дате в прошлом', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('Сервер не вернул успешный статус на дату в прошлом', function () {",
+              "    pm.expect(pm.response.code).to.not.be.oneOf([200, 201]);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Анна\",\n  \"phone\": \"+79991234567\",\n  \"date\": \"2020-01-01\",\n  \"time\": \"14:00\",\n  \"guests\": 4\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      }
+    },
+    {
+      "name": "04. Не хватает обязательного поля (name)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Ожидается 400 Bad Request при отсутствии обязательного поля', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('Сервер не упал с 500 Internal Server Error', function () {",
+              "    pm.expect(pm.response.code).to.not.equal(500);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"phone\": \"+79991234567\",\n  \"date\": \"2026-09-20\",\n  \"time\": \"14:00\",\n  \"guests\": 4\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      }
+    },
+    {
+      "name": "05. Некорректное количество гостей: 0 (Нижняя граница)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Ожидается 400 Bad Request при guests = 0', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('Сервер не упал с 500 Internal Server Error', function () {",
+              "    pm.expect(pm.response.code).to.not.equal(500);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Анна\",\n  \"phone\": \"+79991234567\",\n  \"date\": \"2026-09-20\",\n  \"time\": \"14:00\",\n  \"guests\": 0\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      }
+    },
+    {
+      "name": "06. [Custom] Превышение лимита гостей: 13 (Верхняя граница + 1)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Ожидается 400 Bad Request при guests > 12', function () {",
+              "    pm.response.to.have.status(400);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Анна\",\n  \"phone\": \"+79991234567\",\n  \"date\": \"2026-09-20\",\n  \"time\": \"14:00\",\n  \"guests\": 13\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      }
+    },
+    {
+      "name": "07. [Custom] Дата позднее +90 дней (+91 день)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Ожидается 400 Bad Request при дате > 90 дней', function () {",
+              "    pm.response.to.have.status(400);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Анна\",\n  \"phone\": \"+79991234567\",\n  \"date\": \"2026-12-15\",\n  \"time\": \"14:00\",\n  \"guests\": 4\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      }
+    },
+    {
+      "name": "08. [Custom] Недопустимое имя (1 символ)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Ожидается 400 Bad Request при имени короче 2 символов', function () {",
+              "    pm.response.to.have.status(400);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"А\",\n  \"phone\": \"+79991234567\",\n  \"date\": \"2026-09-20\",\n  \"time\": \"14:00\",\n  \"guests\": 4\n}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      }
+    },
+    {
+      "name": "09. [Custom] Пустое тело запроса (Empty JSON)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Ожидается 400 Bad Request при пустом JSON', function () {",
+              "    pm.response.to.have.status(400);",
+              "});",
+              "",
+              "pm.test('Сервер не упал с 500 Internal Server Error', function () {",
+              "    pm.expect(pm.response.code).to.not.equal(500);",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{}"
+        },
+        "url": {
+          "raw": "{{base_url}}/api/booking",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "api",
+            "booking"
+          ]
+        }
+      }
+    }
+  ]
+}
